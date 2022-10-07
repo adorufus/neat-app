@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "923658158375",
+    "project_id": "neatapp-bc91d",
+    "storage_bucket": "neatapp-bc91d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923658158375:android:dc4f1874544eb37df2e902",
+        "android_client_info": {
+          "package_name": "com.redwoodsinteractive.neat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "923658158375-tst9cjtnicp5kotqgrvjb01994jp5c73.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.redwoodsinteractive.neat",
+            "certificate_hash": "a567df513786df5efe206b0d8b82365d08222757"
+          }
+        },
+        {
+          "client_id": "923658158375-9icj733c7mje6ev5tk52br272hoq168h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLby7RmPkLMdh2e93NtxJHOh3_cgP7tEc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "923658158375-9icj733c7mje6ev5tk52br272hoq168h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
