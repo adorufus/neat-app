@@ -1,32 +1,46 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:neat/firebase_options.dart';
+import 'package:neat/services/firebase/auth_services.dart';
 import 'package:neat/services/localStorageService.dart';
 import 'package:neat/services/restApiServices.dart';
 import 'package:neat/utils/uiUtils.dart';
 import 'package:neat/views/home.dart';
+import 'package:neat/views/splashscreen.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform
+  );
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+
   const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-        designSize: const Size(512, 1024),
-        minTextAdapt: true,
-        builder: (context, child) {
-          return MaterialApp(
-            title: 'Flutter Demo',
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-            ),
-            home: const MyHomePage(),
-          );
-        });
+          designSize: const Size(512, 1024),
+          minTextAdapt: true,
+          builder: (context, child) {
+            return MaterialApp(
+              title: 'Flutter Demo',
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+              ),
+              home: const SplashScreenView(),
+            );
+          }
+    );
   }
 }
 
@@ -69,35 +83,35 @@ class _MyHomePageState extends State<MyHomePage> {
               SizedBox(
                 height: 77.h,
               ),
-              TextFormField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                    labelText: "Username",
-                    hintText: "e.g fadhilkeren22",
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 2.h, horizontal: 12.w),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    )),
-              ),
-              SizedBox(
-                height: 44.h,
-              ),
-              TextFormField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                    labelText: "Password",
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 2.h, horizontal: 12.w),
-                    hintText: "Setidaknya ada 8 karakter",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    )),
-              ),
-              SizedBox(
-                height: 46.h,
-              ),
+              // TextFormField(
+              //   controller: usernameController,
+              //   decoration: InputDecoration(
+              //       labelText: "Username",
+              //       hintText: "e.g fadhilkeren22",
+              //       contentPadding:
+              //           EdgeInsets.symmetric(vertical: 2.h, horizontal: 12.w),
+              //       border: OutlineInputBorder(
+              //         borderRadius: BorderRadius.circular(8.r),
+              //       )),
+              // ),
+              // SizedBox(
+              //   height: 44.h,
+              // ),
+              // TextFormField(
+              //   controller: passwordController,
+              //   obscureText: true,
+              //   decoration: InputDecoration(
+              //       labelText: "Password",
+              //       contentPadding:
+              //           EdgeInsets.symmetric(vertical: 2.h, horizontal: 12.w),
+              //       hintText: "Setidaknya ada 8 karakter",
+              //       border: OutlineInputBorder(
+              //         borderRadius: BorderRadius.circular(8.r),
+              //       )),
+              // ),
+              // SizedBox(
+              //   height: 46.h,
+              // ),
               Container(
                 width: ScreenUtil().screenWidth,
                 height: 63.h,
@@ -105,47 +119,54 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: () {
                     isLoading = true;
                     setState(() {});
-                    RestApiServices.login(
-                            username: usernameController.text,
-                            password: passwordController.text)
-                        .then((response) {
-                      if (response.runtimeType == Response) {
-                        response = response as Response;
-                        if (response.statusCode == 200) {
-                          LocalStorageService.save("username", usernameController.text);
-                          LocalStorageService.save(
-                                  "token", response.data["token"])
-                              .then((value) {
-                            if (value == true) {
-                              isLoading = false;
-                              setState(() {});
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HomeWidget()));
-                            }
-                          });
-                        } else if (response.statusCode == 404) {
-                          isLoading = false;
-                          setState(() {});
-                          print("status code ${response.statusCode}");
-                          print(response.data['message']);
-                        } else {
-                          isLoading = false;
-                          setState(() {});
-                          print("status code ${response.statusCode}");
-                          print(response.data['error']);
-                        }
-                      } else {
-                        isLoading = false;
-                        setState(() {});
-                        print(response['error']);
-                      }
+                    // RestApiServices.login(
+                    //         username: usernameController.text,
+                    //         password: passwordController.text)
+                    //     .then((response) {
+                    //   if (response.runtimeType == Response) {
+                    //     response = response as Response;
+                    //     if (response.statusCode == 200) {
+                    //       LocalStorageService.save("username", usernameController.text);
+                    //       LocalStorageService.save(
+                    //               "token", response.data["token"])
+                    //           .then((value) {
+                    //         if (value == true) {
+                    //           isLoading = false;
+                    //           setState(() {});
+                    //           Navigator.push(
+                    //               context,
+                    //               MaterialPageRoute(
+                    //                   builder: (context) => HomeWidget()));
+                    //         }
+                    //       });
+                    //     } else if (response.statusCode == 404) {
+                    //       isLoading = false;
+                    //       setState(() {});
+                    //       print("status code ${response.statusCode}");
+                    //       print(response.data['message']);
+                    //     } else {
+                    //       isLoading = false;
+                    //       setState(() {});
+                    //       print("status code ${response.statusCode}");
+                    //       print(response.data['error']);
+                    //     }
+                    //   } else {
+                    //     isLoading = false;
+                    //     setState(() {});
+                    //     print(response['error']);
+                    //   }
+                    // });
+                    Authentication.signInWithGoogle(context: context).then((value){
+                      print(value?.displayName);
+                      isLoading = false;
+                      setState(() {
+
+                      });
                     });
                   },
                   style: ButtonStyle(),
                   child: Text(
-                    "Masuk",
+                    "Masuk dengan google",
                     style: TextStyle(color: Color(0xff0E4DA4)),
                   ),
                 ),

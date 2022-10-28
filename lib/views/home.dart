@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:neat/services/localStorageService.dart';
 import 'package:neat/services/restApiServices.dart';
 import 'package:neat/utils/uiUtils.dart';
+import 'package:neat/views/area_list.dart';
 import 'package:neat/views/task_list.dart';
 
 class HomeWidget extends StatefulWidget {
@@ -23,10 +25,13 @@ class _HomeWidgetState extends State<HomeWidget> {
   List areaData = [];
   List checklists = [];
 
+  CollectionReference floorReference =
+      FirebaseFirestore.instance.collection('floors');
+
   @override
   void initState() {
     getUsername();
-    getData();
+    // getData();
     super.initState();
   }
 
@@ -36,10 +41,10 @@ class _HomeWidgetState extends State<HomeWidget> {
   }
 
   void getData() async {
-    getFloor().then((value) {
-      isLoading = false;
-      setState(() {});
-    });
+    // getFloor().then((value) {
+    //   isLoading = false;
+    //   setState(() {});
+    // });
   }
 
   @override
@@ -73,116 +78,65 @@ class _HomeWidgetState extends State<HomeWidget> {
                   ),
                   card(
                       title: "Pilih Lantai",
-                      body: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: floorData.asMap().entries.map((e) {
-                            return Flexible(
-                              child: Row(
-                                children: [
-                                  Radio(
-                                      value: floorData[e.key]["floor"] as int,
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      visualDensity: VisualDensity(
-                                          vertical:
-                                              VisualDensity.minimumDensity),
-                                      groupValue: rValue,
-                                      onChanged: (int? value) async {
-                                        print(value);
-                                        rValue = value ?? -1;
-                                        setState(() {});
-                                        await getArea(floorData[e.key]["_id"]);
-                                      }),
-                                  Text(
-                                    "Lantai ${floorData[e.key]["floor"]}",
-                                    style: TextStyle(
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.bold),
-                                  )
-                                ],
-                              ),
-                            );
-                          }).toList()
-                          // [
-                          //   // Flexible(
-                          //   //   child: SizedBox(
-                          //   //     height: 22.h,
-                          //   //   ),
-                          //   // ),
-                          //   // Flexible(
-                          //   //   child: SizedBox(
-                          //   //     height: 23.h,
-                          //   //   ),
-                          //   // ),
-                          //   // Flexible(
-                          //   //   child: SizedBox(
-                          //   //     height: 23.h,
-                          //   //   ),
-                          //   // ),
-                          //   // Flexible(
-                          //   //   child: Row(
-                          //   //     children: [
-                          //   //       Radio(
-                          //   //           value: 2,
-                          //   //           materialTapTargetSize:
-                          //   //               MaterialTapTargetSize.shrinkWrap,
-                          //   //           visualDensity: VisualDensity(
-                          //   //               vertical: VisualDensity.minimumDensity),
-                          //   //           groupValue: rValue,
-                          //   //           onChanged: (int? value) {
-                          //   //             rValue = value ?? -1;
-                          //   //             setState(() {});
-                          //   //           }),
-                          //   //       Text(
-                          //   //         "Lantai 3",
-                          //   //         style: TextStyle(
-                          //   //             fontSize: 16.sp,
-                          //   //             fontWeight: FontWeight.bold),
-                          //   //       )
-                          //   //     ],
-                          //   //   ),
-                          //   // ),
-                          //   // Flexible(
-                          //   //   child: SizedBox(
-                          //   //     height: 22.h,
-                          //   //   ),
-                          //   // ),
-                          // ],
-                          ),
-                      height: 209),
-                  SizedBox(
-                    height: 25.h,
-                  ),
-                  card(
-                      title: "Kerjaan",
-                      body: areaData.isEmpty
-                          ? Center(
-                              child: Text(
-                                "Admin harus menambahkan data area",
-                                style: TextStyle(fontSize: 15.sp),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 14.w, vertical: 14.h),
-                              itemCount: areaData.length,
-                              itemBuilder: (context, i) {
-                                return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
+                      body: FutureBuilder<QuerySnapshot>(
+                          future: floorReference
+                              .orderBy("floor", descending: false)
+                              .get(),
+                          builder:
+                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else if (snapshot.connectionState ==
+                                ConnectionState.done) {
+                              if (snapshot.hasData) {
+                                var data = snapshot.data;
+
+                                return ListView.builder(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 14.w, vertical: 14.h),
+                                  itemCount: data!.docs.length,
+                                  itemBuilder: (context, i) {
+                                    print(data.docs[i]["floor"]);
+                                    return GestureDetector(
+                                      onTap: () {
+                                        areaData = data.docs[i]["areas"];
+                                        checklists = data.docs[i]["checklists_length"];
+                                        Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                              builder: (context) =>
-                                                  TaskListWidget(
-                                                    areaId: areaData[i]["_id"],
-                                                  )));
-                                    },
-                                    child: kerjaanItemWidget(
-                                        areaName: areaData[i]["area_name"],
-                                        index: i));
-                              },
-                            ),
-                      height: 415)
+                                            builder: (context) =>
+                                                AreaList(
+                                                  areaData: areaData,
+                                                  checklistLength: checklists,
+                                                  floor: data.docs[i]["floor"],
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: lantaiItemWidget(
+                                        data.docs,
+                                          floorName: "Lantai " +
+                                              data.docs[i]["floor"].toString(),
+                                          index: i),
+                                    );
+                                  },
+                                );
+                              } else {
+                                return Center(
+                                  child: Text(
+                                    "Admin harus menambahkan data lantai",
+                                    style: TextStyle(fontSize: 15.sp),
+                                  ),
+                                );
+                              }
+                            } else {
+                              return Container();
+                            }
+                          }),
+                      height: 400.h),
                 ],
               ),
             ),
@@ -190,51 +144,33 @@ class _HomeWidgetState extends State<HomeWidget> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.send),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
-      ),
     );
   }
 
-  Widget kerjaanItemWidget({String areaName = "", int index = -1}) {
+  Widget lantaiItemWidget(List data, {String floorName = "", int index = -1}) {
     return Container(
       height: 61.h,
       width: ScreenUtil().screenWidth,
       padding: EdgeInsets.symmetric(horizontal: 23.w, vertical: 8.h),
-      margin: EdgeInsets.only(bottom: 8.h),
+      margin: EdgeInsets.only(bottom: 20.h),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5.r), color: Color(0xffEEEDED)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                areaName,
+                floorName,
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
               ),
-              SizedBox(
-                height: 5.61.sp,
-              ),
-              Text(
-                "0/${checklists[index]} selesai",
-                style: TextStyle(fontSize: 14.sp),
-              )
+              Text("0/${data[index]["areas"].length} area selesai", style: TextStyle(fontSize: 14.sp),)
             ],
           ),
-          Expanded(child: Container()),
-          Checkbox(
-            value: true,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            visualDensity:
-                VisualDensity(vertical: VisualDensity.minimumDensity),
-            onChanged: (val) {},
-            activeColor: Colors.grey,
-          )
+          const Expanded(child: SizedBox()),
+          const Icon(Icons.arrow_forward_ios_rounded, size: 15,)
         ],
       ),
     );
