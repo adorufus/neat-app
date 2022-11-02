@@ -33,7 +33,11 @@ class _TaskListState extends State<TaskList> {
 
           Map mappedData = {};
 
-          mappedData = taskData.firstWhere((element) => element["floor"] == widget.floor && element["areaName"] == widget.areaName, orElse: () => {});
+          mappedData = taskData.firstWhere(
+              (element) =>
+                  element["floor"] == widget.floor &&
+                  element["areaName"] == widget.areaName,
+              orElse: () => {});
 
           if (mappedData["areaName"] == widget.areaName &&
               mappedData["floor"] == widget.floor &&
@@ -43,15 +47,15 @@ class _TaskListState extends State<TaskList> {
             setState(() {});
           } else {
             print("all condition not met");
-            // for (int i = 0; i < checklistData.length; i++) {
-            //   data.add({"index": i, "value": "false"});
-            // }
+            for (int i = 0; i < checklistData.length; i++) {
+              data.add({"task_name": checklistData[i], "value": "false"});
+            }
 
             LocalStorageService.load("taskData").then((taskDataValue) async {
               List varDat = taskDataValue;
               varDat.add({
                 "areaName": widget.areaName,
-                "checklist_data": [],
+                "checklist_data": data,
                 "floor": widget.floor
               });
 
@@ -65,14 +69,14 @@ class _TaskListState extends State<TaskList> {
         });
       } else {
         print("no key found");
-        // for (int i = 0; i < checklistData.length; i++) {
-        //   data.add({"index": i, "value": "false"});
-        // }
+        for (int i = 0; i < checklistData.length; i++) {
+          data.add({"task_name": checklistData[i], "value": "false"});
+        }
 
         await LocalStorageService.save("taskData", [
           {
             "areaName": widget.areaName,
-            "checklist_data": [],
+            "checklist_data": data,
             "floor": widget.floor
           }
         ]);
@@ -105,20 +109,22 @@ class _TaskListState extends State<TaskList> {
                       itemBuilder: (context, i) {
                         return GestureDetector(
                             onTap: () {
-                              if (!data.asMap().containsKey(i)) {
+                              if (data[i]["value"] != "true") {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => TaskListWidget(
-                                      taskName: checklistData[i],
-                                      floor: widget.floor,
-                                      areaName: widget.areaName,
-                                    ),
+                                        taskName: checklistData[i],
+                                        floor: widget.floor,
+                                        areaName: widget.areaName,
+                                        thisItemIndex: i),
                                   ),
                                 ).then((value) async {
                                   if (value != null) {
-                                    data.add(value);
+                                    data[i] = value;
                                     setState(() {});
+
+                                    print('current index: ' + i.toString());
 
                                     savedData = {
                                       "areaName": widget.areaName,
@@ -131,20 +137,23 @@ class _TaskListState extends State<TaskList> {
                                       if (value) {
                                         LocalStorageService.load("taskData")
                                             .then((taskData) async {
-                                          List dat0 =
-                                              taskData;
+                                          List dat0 = taskData;
                                           for (int i = 0;
                                               i < dat0.length;
                                               i++) {
                                             if (dat0[i]
-                                                    .containsKey("areaName") && dat0[i].containsKey("floor") &&
+                                                    .containsKey("areaName") &&
+                                                dat0[i].containsKey("floor") &&
                                                 dat0[i]["areaName"] ==
-                                                    widget.areaName && dat0[i]["floor"] == widget.floor) {
+                                                    widget.areaName &&
+                                                dat0[i]["floor"] ==
+                                                    widget.floor) {
                                               dat0[i] = savedData;
 
-                                              await LocalStorageService.save("taskData", dat0);
-                                              print(await LocalStorageService.load(
-                                                  "taskData"));
+                                              await LocalStorageService.save(
+                                                  "taskData", dat0);
+                                              print(await LocalStorageService
+                                                  .load("taskData"));
                                             }
                                           }
                                         });
@@ -167,7 +176,6 @@ class _TaskListState extends State<TaskList> {
   }
 
   Widget kerjaanItemWidget({String areaName = "", int index = -1}) {
-
     print(checklistData[index]);
     return Container(
       height: 61.h,
@@ -190,7 +198,7 @@ class _TaskListState extends State<TaskList> {
                   fontWeight: FontWeight.bold,
                   decoration: data.isEmpty
                       ? TextDecoration.none
-                      : !data.asMap().containsKey(index)
+                      : data[index]["value"] == "false"
                           ? TextDecoration.none
                           : TextDecoration.lineThrough),
             ),
@@ -204,8 +212,7 @@ class _TaskListState extends State<TaskList> {
             onChanged: (val) {},
             activeColor: data.isEmpty
                 ? Colors.grey
-                : data.asMap().containsKey(index) &&
-                        data[index]["value"] == "true"
+                : data[index]["value"] == "true"
                     ? Colors.green
                     : Colors.grey,
           )

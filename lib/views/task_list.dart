@@ -37,7 +37,9 @@ class TaskListWidget extends StatefulWidget {
   final String? taskName;
   final String? areaName;
   final int? floor;
-  const TaskListWidget({Key? key, this.taskName, this.floor, this.areaName})
+  final int? thisItemIndex;
+  const TaskListWidget(
+      {Key? key, this.taskName, this.floor, this.areaName, this.thisItemIndex})
       : super(key: key);
 
   @override
@@ -119,7 +121,8 @@ class _TaskListWidgetState extends State<TaskListWidget> {
                                 ? Container()
                                 : Center(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.camera_alt,
@@ -149,7 +152,7 @@ class _TaskListWidgetState extends State<TaskListWidget> {
                                   .collection('task_data');
                               final imageRef = storage
                                   .ref()
-                                  .child('image/${DateTime.now().toLocal()}');
+                                  .child('image/${DateTime.now()}');
 
                               imageRef
                                   .putFile(File(proofImage))
@@ -190,13 +193,16 @@ class _TaskListWidgetState extends State<TaskListWidget> {
                                   "task_name": widget.taskName,
                                   "area_name": widget.areaName,
                                   "pic": pic,
-                                  "created": DateTime.now().toLocal(),
+                                  "created": DateTime.now(),
                                   "image_url":
                                       await snapshot.ref.getDownloadURL()
                                 }).then((value) {
                                   isLoading = false;
                                   setState(() {});
-                                  Navigator.pop(context, {"value": "true", "task_name": widget.taskName});
+                                  Navigator.pop(context, {
+                                    "value": "true",
+                                    "task_name": widget.taskName
+                                  });
                                 }).onError((error, stackTrace) {
                                   isLoading = false;
                                   setState(() {});

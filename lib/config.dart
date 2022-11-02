@@ -16,7 +16,7 @@ var dio = Dio(
 void setWorkStartTime() async {
   await LocalStorageService.check("work_start_time").then((value) {
     if(value == false) {
-      LocalStorageService.save("work_start_time", DateTime.now().toLocal());
+      LocalStorageService.save("work_start_time", DateTime.now());
     }
   });
 }

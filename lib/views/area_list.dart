@@ -36,15 +36,15 @@ class _AreaListState extends State<AreaList> {
   }
 
   void checkTaskData() {
-
-    LocalStorageService.check("downloadUrls").then((value){
-      if(value) {
-        LocalStorageService.load("downloadUrls").then((thisValue){
+    LocalStorageService.check("downloadUrls").then((value) {
+      if (value) {
+        LocalStorageService.load("downloadUrls").then((thisValue) {
           List downloadUrls = thisValue;
 
-          downloadUrls.removeWhere((element) => element["floor"] != widget.floor);
+          downloadUrls
+              .removeWhere((element) => element["floor"] != widget.floor);
 
-          for(int i = 0; i < downloadUrls.length; i++) {
+          for (int i = 0; i < downloadUrls.length; i++) {
             urls.add(downloadUrls[i]["downloadUrl"]);
           }
 
@@ -75,6 +75,8 @@ class _AreaListState extends State<AreaList> {
                 mappedData["floor"] == widget.floor &&
                 mappedData["checklist_data"] != null &&
                 mappedData["checklist_data"].isNotEmpty) {
+              mappedData["checklist_data"]
+                  .removeWhere((element) => element["value"] == "false");
               data = mappedData["checklist_data"];
               print("berak: " + data.toString());
               setState(() {});
@@ -265,18 +267,15 @@ class _AreaListState extends State<AreaList> {
                                   for (int j = 0; j < floorData.length; j++) {
                                     Map areaMap = {
                                       "completed_task": {
-                                        floorData[j]["areaName"]: {
-                                          "done": floorData[j]["checklist_data"]
-                                              .length,
-                                          "total_task":
-                                              widget.checklistLength[j],
-                                        },
+                                        "area_name": floorData[j]["areaName"],
+                                        "done": floorData[j]["checklist_data"]
+                                            .length,
+                                        "total_task": widget.checklistLength[j],
                                         "percentage": ((floorData[j]
-                                        ["checklist_data"]
-                                            .length /
-                                            widget
-                                                .checklistLength[j]) *
-                                            100 as double)
+                                                            ["checklist_data"]
+                                                        .length /
+                                                    widget.checklistLength[j]) *
+                                                100 as double)
                                             .floor()
                                       }
                                     };
@@ -286,7 +285,8 @@ class _AreaListState extends State<AreaList> {
                                     print(areaDetail);
                                   }
 
-                                  if(areaDetail.length < widget.checklistLength.length){
+                                  if (areaDetail.length <
+                                      widget.checklistLength.length) {
                                     showDialog(
                                         context: context,
                                         builder: (context) {
@@ -294,7 +294,7 @@ class _AreaListState extends State<AreaList> {
                                             title: Text(
                                               "Yang bener aja >:(",
                                               style:
-                                              TextStyle(color: Colors.red),
+                                                  TextStyle(color: Colors.red),
                                             ),
                                             content: Text(
                                                 "Minimal kerjain satu di setiap area"),
@@ -302,19 +302,22 @@ class _AreaListState extends State<AreaList> {
                                         });
                                   } else {
                                     List allPercent = [];
-                                    for(int i = 0; i < areaDetail.length; i++){
-                                      allPercent.add(areaDetail[i]["completed_task"]["percentage"]);
+                                    for (int i = 0;
+                                        i < areaDetail.length;
+                                        i++) {
+                                      allPercent.add(areaDetail[i]
+                                          ["completed_task"]["percentage"]);
                                     }
 
-                                    if(allPercent.contains(0)) {
+                                    if (allPercent.contains(0)) {
                                       showDialog(
                                           context: context,
                                           builder: (context) {
                                             return const AlertDialog(
                                               title: Text(
                                                 "Yang bener aja >:(",
-                                                style:
-                                                TextStyle(color: Colors.red),
+                                                style: TextStyle(
+                                                    color: Colors.red),
                                               ),
                                               content: Text(
                                                   "Minimal kerjain satu di setiap area"),
@@ -351,9 +354,11 @@ class _AreaListState extends State<AreaList> {
   void prosesUpload(List areaDetail) async {
     var workDataCol = FirebaseFirestore.instance.collection("work_data");
 
+    print(DateTime.now());
+
     workDataCol.add({
       "work_start_time": await LocalStorageService.load("work_start_time"),
-      "work_finished_time": DateTime.now().toLocal(),
+      "work_finished_time": DateTime.now(),
       "pic": await LocalStorageService.load("username"),
       "floor_cleaned": widget.floor,
       "area_detail": areaDetail,
@@ -460,7 +465,9 @@ class _AreaListState extends State<AreaList> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    Navigator.pop(context,);
+                    Navigator.pop(
+                      context,
+                    );
                   },
                   child: Icon(
                     Icons.arrow_back_ios_rounded,

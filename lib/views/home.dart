@@ -8,6 +8,8 @@ import 'package:neat/utils/uiUtils.dart';
 import 'package:neat/views/area_list.dart';
 import 'package:neat/views/task_list.dart';
 
+import '../config.dart';
+
 class HomeWidget extends StatefulWidget {
   const HomeWidget({Key? key}) : super(key: key);
 
@@ -102,6 +104,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                                     print(data.docs[i]["floor"]);
                                     return GestureDetector(
                                       onTap: () {
+                                        setWorkStartTime();
                                         areaData = data.docs[i]["areas"];
                                         checklists = data.docs[i]["checklists_length"];
                                         Navigator.push(
@@ -166,7 +169,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                 floorName,
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
               ),
-              Text("0/${data[index]["areas"].length} area selesai", style: TextStyle(fontSize: 14.sp),)
+              // Text("0/${data[index]["areas"].length} area selesai", style: TextStyle(fontSize: 14.sp),)
             ],
           ),
           const Expanded(child: SizedBox()),
