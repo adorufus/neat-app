@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:neat/services/localStorageService.dart';
+import 'package:neat/utils/pretty_print.dart';
 import 'package:neat/views/new_task_list.dart';
 import 'package:neat/views/task_list.dart';
 
@@ -58,12 +61,13 @@ class _AreaListState extends State<AreaList> {
         LocalStorageService.load("taskData").then((thisValue) async {
           floorData = thisValue;
           floorData.removeWhere((element) => element["floor"] != widget.floor);
-          print("floor data" + floorData.toString());
+          PrettyPrint(floorData);
           setState(() {});
           List taskData = thisValue;
 
           Map mappedData = {};
 
+          print("area Data: " + widget.areaData.toString());
           for (int i = 0; i < widget.areaData.length; i++) {
             mappedData = taskData.firstWhere(
                 (element) =>
@@ -71,39 +75,61 @@ class _AreaListState extends State<AreaList> {
                     element["areaName"] == widget.areaData[i]["name"],
                 orElse: () => {});
 
+            print("Mapped Data: " + mappedData.toString());
+
             if (mappedData["areaName"] == widget.areaData[i]["name"] &&
                 mappedData["floor"] == widget.floor &&
-                mappedData["checklist_data"] != null &&
-                mappedData["checklist_data"].isNotEmpty) {
+                mappedData["checklist_data"] != null) {
               mappedData["checklist_data"]
                   .removeWhere((element) => element["value"] == "false");
               data = mappedData["checklist_data"];
               print("berak: " + data.toString());
               setState(() {});
+            } else {
+              print("all condition not met");
+              List data = [];
+
+              for (int i = 0; i < widget.areaData.length; i++) {
+                data.add({
+                  "areaName": widget.areaData[i]["name"],
+                  "checklist_data": [],
+                  "floor": widget.floor
+                });
+              }
+
+              PrettyPrint(data);
+
+              await LocalStorageService.load("taskData").then((val) async {
+                List thisData = val;
+
+                thisData.addAll(data);
+
+                PrettyPrint(thisData, frontText: "Kontoi: ");
+
+                await LocalStorageService.save("taskData", thisData);
+              });
+              setState(() {});
+              return;
             }
-            // else {
-            //   print("all condition not met");
-            //   for (int i = 0; i < checklistData.length; i++) {
-            //     data.add({"index": i, "value": "false"});
-            //   }
-            //
-            //   LocalStorageService.load("taskData").then((taskDataValue) async {
-            //     List varDat = taskDataValue;
-            //     varDat.add({
-            //       "areaName": widget.areaName,
-            //       "checklist_data": data,
-            //       "floor": widget.floor
-            //     });
-            //
-            //     print(varDat);
-            //
-            //     await LocalStorageService.save("taskData", varDat);
-            //   });
-            //
-            //   setState(() {});
-            // }
           }
         });
+      } else {
+        print("no key found");
+
+        List data = [];
+
+        for (int i = 0; i < widget.areaData.length; i++) {
+          data.add({
+            "areaName": widget.areaData[i]["name"],
+            "checklist_data": [],
+            "floor": widget.floor
+          });
+        }
+
+        PrettyPrint(data);
+
+        await LocalStorageService.save("taskData", data);
+        setState(() {});
       }
       // else {
       //   print("no key found");
@@ -414,7 +440,7 @@ class _AreaListState extends State<AreaList> {
                 height: 5.61.sp,
               ),
               Text(
-                "${floorData.isEmpty || !floorData.asMap().containsKey(index) ? 0 : floorData[index]["checklist_data"] == null ? 0 : floorData[index]["checklist_data"].length}/${widget.checklistLength[index]} selesai",
+                "${floorData.isEmpty || !floorData.asMap().containsKey(index) ? 0 : floorData[index]["checklist_data"].length}/${widget.checklistLength[index]} selesai",
                 style: TextStyle(fontSize: 14.sp),
               )
             ],

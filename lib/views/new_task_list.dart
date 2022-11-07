@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:neat/services/localStorageService.dart';
+import 'package:neat/utils/pretty_print.dart';
 import 'package:neat/views/task_list.dart';
 
 class TaskList extends StatefulWidget {
@@ -28,7 +29,7 @@ class _TaskListState extends State<TaskList> {
     LocalStorageService.check("taskData").then((value) async {
       if (value == true) {
         LocalStorageService.load("taskData").then((value) async {
-          print(value);
+          PrettyPrint(value);
           List taskData = value;
 
           Map mappedData = {};
@@ -41,7 +42,8 @@ class _TaskListState extends State<TaskList> {
 
           if (mappedData["areaName"] == widget.areaName &&
               mappedData["floor"] == widget.floor &&
-              mappedData["checklist_data"] != null) {
+              mappedData["checklist_data"] != null &&
+              mappedData["checklist_data"].isNotEmpty) {
             data = mappedData["checklist_data"];
             print("berak: " + data.toString());
             setState(() {});
@@ -53,13 +55,33 @@ class _TaskListState extends State<TaskList> {
 
             LocalStorageService.load("taskData").then((taskDataValue) async {
               List varDat = taskDataValue;
-              varDat.add({
-                "areaName": widget.areaName,
-                "checklist_data": data,
-                "floor": widget.floor
-              });
+              if ((varDat.singleWhere(
+                      (element) => element["areaName"] == widget.areaName,
+                      orElse: () => null)) !=
+                  null) {
+                    var singleData = varDat.firstWhere(
+              (element) =>
+                  element["floor"] == widget.floor &&
+                  element["areaName"] == widget.areaName,
+              orElse: () => {});
 
-              print(varDat);
+                      singleData["checklist_data"] = data;
+                PrettyPrint(singleData);
+                for(int i = 0; i < varDat.length; i++){
+                  if(varDat[i]["areaName"] == singleData["areaName"]) {
+                    varDat[i]["checklist_data"] = data;
+                  }
+                }
+                // varDat[0]["checklist_data"] = data;
+              } else {
+                varDat.add({
+                  "areaName": widget.areaName,
+                  "checklist_data": data,
+                  "floor": widget.floor
+                });
+              }
+
+              PrettyPrint(varDat);
 
               await LocalStorageService.save("taskData", varDat);
             });
